@@ -9,6 +9,8 @@
 
 ;; need to tokenize
 
+()
+
 (defn add-value [index items value]
   (let [items (seq items)]
     (loop [index index
