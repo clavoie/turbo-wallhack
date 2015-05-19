@@ -9,7 +9,7 @@
 
 ;; need to tokenize
 
-()
+;; ()
 
 (defn add-value [index items value]
   (let [items (seq items)]
@@ -26,7 +26,7 @@
          items (seq items)]
     (if (empty? items)
       index
-      (recur (merge {(first item) []} index)
+      (recur (merge {(first items) []} index)
              (rest items)))))
 
 (defn add

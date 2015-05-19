@@ -1,8 +1,4 @@
-(ns turbo-wallhack.node)
-
-;;
-;; private
-;;
+(ns turbo-wallhack.private.node)
 
 (defn create
   "Creates a new node in the radix tree"
@@ -12,7 +8,7 @@
 (defn ensure-path
   "Ensures a path exists or creates it"
   [node token]
-  (let [token-seq (seq tokens)]
+  (let [token-seq (seq token)]
     (loop [root node
            this-token (first token-seq)
            rest-tokens (rest token-seq)
@@ -22,7 +18,7 @@
         (recur (if (get-in root path) root (update-in root path (create this-token)))
                (first rest-tokens)
                (rest rest-tokens)
-               (conj path :edges (first this-token)))))))
+               (conj path :edges (first rest-tokens)))))))
 
 (defn get-value-path
   [token]
@@ -31,21 +27,4 @@
         path (interleave edge-pieces token-seq)
         path (take (* 2 (count token)) path)
         path (vec path)]
-    (conj path :value)))
-
-;;
-;; public
-;;
-
-(defn make-root
-  "Create a new root node for a new graph"
-  []
-  (create :root))
-
-(defn add
-  "Adds a token to the node index, returns the updated node"
-  [node token value]
-  (let [node (ensure-path node token)
-        token-seq (seq token)
-        path (get-value-path token)]
-    (update-in node path #(conj %1 value))))
+    (conj path :values)))
