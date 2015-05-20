@@ -1,5 +1,11 @@
 (ns turbo-wallhack.private.node)
 
+;; (node?)
+;; (get-index)
+;; (get-edges)
+;; (get-path)
+;; (get-values)
+
 (defn create
   "Creates a new node in the radix tree.
 
@@ -10,6 +16,42 @@
   [index path]
   (assert (vector? path) "path must be a vector")
   {:index index :edges {} :path path :values nil})
+
+(defn get-index
+  "Returns the item in the sequence by which the node is indexed
+
+  node - the node for which the index should be returned
+
+  Returns the index for the given node"
+  [node]
+  (get node :index))
+
+(defn get-edges
+  "Returns the edges, child nodes, for this node. The edges will be a map of {node-index node}
+
+  node - the node for which the edges should be returned
+
+  Returns the edges for the given node"
+  [node]
+  (get node :edges))
+
+(defn get-path
+  "Returns the path used to reach this node. This path can be passed into (get-in), etc
+
+  node - the node for which the path should be returned
+
+  Returns the path for the given node. The path will be a vector"
+  [node]
+  (get node :path))
+
+(defn get-values
+  "Returns the values this node contains, if it is a leaf node
+
+  node - the node for which the values should be returned
+
+  Returns the sequence of values for this node, or nil if this node contains no values"
+  [node]
+  (get node :values))
 
 (defn ensure-path
   "Ensures a path exists within a node, creating it if needed.
@@ -70,7 +112,7 @@
 
   Returns a lazy sequence of all the child and grandchild nodes"
   [root]
-  (let [child-nodes (for [[_ child] (get root :edges)] child)
+  (let [child-nodes (for [[_ child] (get-edges root)] child)
         granchild-nodes (map get-children child-nodes)]
     (apply concat (conj granchild-nodes child-nodes))))
 
@@ -81,7 +123,7 @@
 
   Returns a truthy value if the node is a leaf node, or nil if it is not"
   [node]
-  (not-empty (get node :values)))
+  (not-empty (get-values node)))
 
 (defn get-leaves
   "Returns all the child nodes from a root node which are leaf nodes
@@ -99,4 +141,4 @@
 
   Returns a lazy sequence of index values which lead to the node in the radix tree"
   [node]
-  (filter #(not= :edges %1) (get node :path)))
+  (filter #(not= :edges %1) (get-path node)))

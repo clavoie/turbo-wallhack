@@ -31,4 +31,4 @@
   [root value]
   (if-let [node (private/get-node root value)]
     (for [leaf (private/get-leaves node)]
-      {:seq (private/get-path-seq leaf) :values (get leaf :values)})))
+      {:seq (private/get-path-seq leaf) :values (private/get-values leaf)})))
