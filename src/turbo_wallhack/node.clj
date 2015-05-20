@@ -4,7 +4,7 @@
 (defn make-root
   "Create a new root node for a new graph"
   []
-  (private/create :root))
+  (private/create :root []))
 
 (defn add
   "Adds a token to the node index, returns the updated node"
@@ -13,3 +13,23 @@
         token-seq (seq token)
         path (private/get-value-path token)]
     (update-in node path #(conj %1 value))))
+
+;; https://github.com/Yomguithereal/clj-fuzzy
+;; rough cloud
+;; word length score
+;; number of values score
+;; word distance score / multiplier
+;; does index matter?
+;; (store search-obj "text to index" doc)
+;; (store search-obj :index-name "text to index" doc)
+;; (search search-obj "thing") => ({:score score, matches: ({context: "matching text", :range-inclusive [5,10]}), :doc doc})
+
+
+;; (complete root "hel") => (["help" score? (values)] ["hello" score? (values)])
+
+(defn complete
+  "Completes the sequence given a token"
+  [root token]
+  (if-let [node (get-in root (private/get-node-path token))]
+    (for [leaf (private/get-leaves node)]
+      {:seq (private/get-path-seq leaf) :values (get leaf :values)})))
