@@ -38,17 +38,23 @@
     (is (thrown? AssertionError (create \a '())))))
 
 (deftest ensure-path-test
-  (let [node (create \a [])
-        node (ensure-path node "lso")
-        node (ensure-path node "lsi")
-        node (ensure-path node "lwo")]
-    (assert-node-path node [] 1)
-    (assert-node-path node [:edges \l] 2)
-    (assert-node-path node [:edges \l :edges \s] 2)
-    (assert-node-path node [:edges \l :edges \w] 1)
-    (assert-node-path node [:edges \l :edges \s :edges \o] 0)
-    (assert-node-path node [:edges \l :edges \s :edges \i] 0)
-    (assert-node-path node [:edges \l :edges \w :edges \o] 0)))
+  (testing "empty token, no change"
+    (let [node (create \a [])
+          node (ensure-path node "hello")
+          node2 (ensure-path node "")]
+      (is (= node node2))))
+  (testing "missing path created, existing paths added to"
+    (let [node (create \a [])
+          node (ensure-path node "lso")
+          node (ensure-path node "lsi")
+          node (ensure-path node "lwo")]
+      (assert-node-path node [] 1)
+      (assert-node-path node [:edges \l] 2)
+      (assert-node-path node [:edges \l :edges \s] 2)
+      (assert-node-path node [:edges \l :edges \w] 1)
+      (assert-node-path node [:edges \l :edges \s :edges \o] 0)
+      (assert-node-path node [:edges \l :edges \s :edges \i] 0)
+      (assert-node-path node [:edges \l :edges \w :edges \o] 0))))
 
 (deftest get-value-path-test
   (is (= [:edges \h :edges \e :edges \l :edges \l :edges \o :values] (get-value-path "hello"))))
@@ -57,6 +63,6 @@
   (let [node (create \a [])
         node (ensure-path node "lso")
         node (ensure-path node "lsi")
-        childs (map #(get %1 :index) (children node))]
+        childs (map #(get %1 :index) (get-children node))]
     (is (= '(\l \s \o \i)))))
 

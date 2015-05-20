@@ -1,59 +1,102 @@
 (ns turbo-wallhack.private.node)
 
 (defn create
-  "Creates a new node in the radix tree
+  "Creates a new node in the radix tree.
 
   index - the item in the sequence by which this node is indexed
-  path - the path to this node in the radix tree"
+  path - the path to this node in the radix tree
+
+  Returns the new node"
   [index path]
   (assert (vector? path) "path must be a vector")
   {:index index :edges {} :path path :values nil})
 
 (defn ensure-path
-  "Ensures a path exists or creates it"
-  [node token]
-  (let [token-seq (seq token)]
-    (loop [root node
-           this-token (first token-seq)
-           rest-tokens (rest token-seq)
-           path [:edges this-token]]
-      (if-not this-token
+  "Ensures a path exists within a node, creating it if needed.
+
+  root - the base node from which the path should be created
+  value - the value which will be sequenced out from the root node. (seq value) is called to create the sequence
+
+  Returns the updated root, or the existing root if no change was needed"
+  [root value]
+  (let [value-seq (seq value)]
+    (loop [root root
+           this-item (first value-seq)
+           rest-items (rest value-seq)
+           path [:edges this-item]]
+      (if-not this-item
         root
-        (recur (if (get-in root path) root (assoc-in root path (create this-token path)))
-               (first rest-tokens)
-               (rest rest-tokens)
-               (conj path :edges (first rest-tokens)))))))
+        (recur (if (get-in root path) root (assoc-in root path (create this-item path)))
+               (first rest-items)
+               (rest rest-items)
+               (conj path :edges (first rest-items)))))))
 
 (defn get-node-path
-  [token]
-  (let [token-seq (seq token)
-        edge-pieces (repeatedly #(identity :edges))
-        path (interleave edge-pieces token-seq)
-        path (take (* 2 (count token)) path)]
+  "Returns a path for a token which can be used to lookup a node in the radix tree
+
+  value - the value which will be used to create the path. (seq value) is used to create the sequence
+
+  Returns a vector which can be used to look up a node in the radix tree"
+  [value]
+  (let [value-seq (seq value)
+        edge-seq (repeat :edges)
+        path (interleave edge-seq value-seq)
+        path (take (* 2 (count value)) path)]
     (vec path)))
 
 (defn get-value-path
-  [token]
-  (conj (get-node-path token) :values))
+  "Returns the path for the values collection of a node
 
-(defn get-edges-path
-  [token]
-  (conj (get-node-path token) :edges))
+  value - the value which will be used to create the path. (seq value) is used to create the sequence
 
-;; get child nodes => returns a lazy seq of all child nodes in a node
+  Returns a vecor which can be used to look up a node's value"
+  [value]
+  (conj (get-node-path value) :values))
 
-(defn children
-  [node]
-  (let [child-nodes (for [[_ child] (get node :edges)] child)
-        granchild-nodes (map children child-nodes)]
+(defn get-node
+  "Returns a node in the tree, or nil if no such node exists
+
+  root - the root node from which the graph should be searched
+  value - the value which will be used to search the tree. (seq value) will be used to create the search sequence
+
+  Returns a node, or nil"
+  [root value]
+  (get-in root (get-node-path value)))
+
+(defn get-children
+  "Returns all the child and grandchild nodes of a root node
+
+  root - the node whose children should be returned
+
+  Returns a lazy sequence of all the child and grandchild nodes"
+  [root]
+  (let [child-nodes (for [[_ child] (get root :edges)] child)
+        granchild-nodes (map get-children child-nodes)]
     (apply concat (conj granchild-nodes child-nodes))))
 
-(defn get-leaves
+(defn leaf?
+  "Tests if a node is a leaf node or not. A node is considered to be a leaf node if it has one or more values
+
+  node - the node to test
+
+  Returns a truthy value if the node is a leaf node, or nil if it is not"
   [node]
-  (filter #(not (empty? (get %1 :values))) (children node)))
+  (not-empty (get node :values)))
+
+(defn get-leaves
+  "Returns all the child nodes from a root node which are leaf nodes
+
+  root - the node which should be searched for leaf nodes
+
+  Returns a lazy sequence of leaf nodes based off of the root node"
+  [root]
+  (filter leaf? (get-children root)))
 
 (defn get-path-seq
+  "Returns the sequence of indexes which lead to node
+
+  node - the node whose index path should be returned
+
+  Returns a lazy sequence of index values which lead to the node in the radix tree"
   [node]
   (filter #(not= :edges %1) (get node :path)))
-
-;; defn leaves => returns a lazy seq of all nodes with a non empty value...or with no children
