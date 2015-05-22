@@ -1,4 +1,5 @@
-(ns turbo-wallhack.core)
+(ns turbo-wallhack.core
+  (:require [turbo-wallhack.private.core :as private]))
 
 ;;
 ;; create, => can predefine indexes with weights, give a predefined tokenizer, give predefined token filters, etc
@@ -19,9 +20,10 @@
 
 (defn store
   [wallhack value]
-  ;; assert wallhack
-  ;; assert value map
-  )
+  (assert (private/wallhack? wallhack) "invalid wallhack object")
+  (assert (map? value "value must be a map"))
+  (let [wallhack (private/ensure-indexes wallhack value)]
+    (private/add-to-indexes wallhack value)))
 
 (defn search
   [wallhack value]
