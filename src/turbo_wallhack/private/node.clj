@@ -1,11 +1,5 @@
 (ns turbo-wallhack.private.node)
 
-;; (node?)
-;; (get-index)
-;; (get-edges)
-;; (get-path)
-;; (get-values)
-
 (defn create
   "Creates a new node in the radix tree.
 
