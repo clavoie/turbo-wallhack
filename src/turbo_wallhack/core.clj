@@ -8,7 +8,7 @@
 
 (defn create
   "Creates a new turbo wallhack"
-  [& {:keys [filter-fn tokenize-fn score-fn weights] :or {:filter-fn identity :tokenize-fn identity :score-fn identity :weights {:default 1}}}]
+  [& {:keys [filter-fn tokenize-fn score-fn weights] :or {filter-fn identity tokenize-fn identity score-fn identity weights {:default 1}}}]
   ;; assert
   {:filter-fn filter-fn
    :indexes {}
